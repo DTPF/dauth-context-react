@@ -4,7 +4,7 @@ This is a simple example of how to use a custom `DauthProvider`, and how to util
 ## Installation
 You can install this package via npm. Make sure you have Node.js installed on your machine. Then, in your project directory, run the following command:
 ```bash
-npm install dauth-react-context
+npm install dauth-context-react
 ```
 
 ## Code Example
@@ -14,33 +14,31 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { RouterProvider } from 'react-router-dom';
 import router from './router/router';
-import  { DauthProvider } from 'dauth-react-context';
+import  { DauthProvider } from 'dauth-context-react';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <DauthProvider
-      domainName={domainName}
-      sid={sid}
-      ssid={ssid}
-    >
-      <RouterProvider 
-        router={router} 
-        fallbackElement={<></>} 
-      />
-    </DauthProvider>
-  </React.StrictMode>,
+  <DauthProvider
+    domainName={domainName}
+    sid={sid}
+    ssid={ssid}
+  >
+    <RouterProvider 
+      router={router} 
+      fallbackElement={<></>} 
+    />
+  </DauthProvider>,
   document.getElementById('root')
 );
 ```
 
 ## Example: Using Authentication Context
-Here's an example of how to use the authentication context (dauth-react-context) in your components:
+Here's an example of how to use the authentication context (dauth-context-react) in your components:
 ```
 import React, { useContext } from 'react';
-import { DauthContext } from 'dauth-react-context';
+import { useDauth } from 'dauth-context-react';
 
 function SomeComponent() {
-  const { isAuthenticated, isLoading, user, loginWithRedirect, logout, getAccessToken } = useContext(DauthContext);
+  const { isAuthenticated, isLoading, user, loginWithRedirect, logout, getAccessToken } = useDauth();
 
   return (
     isLoading ? <div>Loading...</div> :
