@@ -6,17 +6,15 @@ type TSetDauthStateAction = {
   dispatch: any;
   dauth_state: string;
   domainName: string;
-  ssid: string;
 };
 export async function setDauthStateAction({
   dispatch,
   dauth_state,
   domainName,
-  ssid,
 }: TSetDauthStateAction) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   try {
-    const getUserFetch = await getTenantUserAPI(domainName, ssid, dauth_state);
+    const getUserFetch = await getTenantUserAPI(domainName, dauth_state);
     if (getUserFetch.response.status === 200) {
       dispatch({
         type: DauthTypes.LOGIN,
@@ -50,21 +48,15 @@ type TSetAutoLoginAction = {
   dispatch: any;
   dauth_state_ls: string;
   domainName: string;
-  ssid: string;
 };
 export async function setAutoLoginAction({
   dispatch,
   dauth_state_ls,
   domainName,
-  ssid,
 }: TSetAutoLoginAction) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   try {
-    const getUserFetch = await getTenantUserAPI(
-      domainName,
-      ssid,
-      dauth_state_ls
-    );
+    const getUserFetch = await getTenantUserAPI(domainName, dauth_state_ls);
     if (getUserFetch.response.status === 200) {
       dispatch({
         type: DauthTypes.LOGIN,

@@ -15,14 +15,13 @@ import { DAUTH_STATE } from './constants';
 interface DauthProviderProps {
   domainName: string;
   sid: string;
-  ssid: string;
   children: React.ReactNode;
 }
 
 export const DauthProvider: React.FC<DauthProviderProps> = (
   props: DauthProviderProps
 ) => {
-  const { domainName, sid, ssid, children } = props;
+  const { domainName, sid, children } = props;
   const [ds, dispatch] = useReducer(userReducer, initialDauthState);
   const dauthState = ds as IDauthState;
 
@@ -33,17 +32,17 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     const urlParams = new URLSearchParams(queryString);
     const dauth_state = urlParams.get(DAUTH_STATE);
     if (dauth_state && !dauthState.isAuthenticated) {
-      action.setDauthStateAction({ dispatch, dauth_state, domainName, ssid });
+      action.setDauthStateAction({ dispatch, dauth_state, domainName });
     }
-  }, [dauthState.isAuthenticated, domainName, ssid]);
+  }, [dauthState.isAuthenticated, domainName]);
 
   // Auto Login
   useEffect(() => {
     const dauth_state_ls = localStorage.getItem(DAUTH_STATE);
     if (dauth_state_ls && !dauthState.isAuthenticated) {
-      action.setAutoLoginAction({ dispatch, dauth_state_ls, domainName, ssid });
+      action.setAutoLoginAction({ dispatch, dauth_state_ls, domainName });
     }
-  }, [dauthState.isAuthenticated, domainName, ssid]);
+  }, [dauthState.isAuthenticated, domainName]);
 
   const loginWithRedirect = useCallback(() => {
     return window.location.replace(
@@ -55,13 +54,19 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     return action.setLogoutAction({ dispatch });
   }, []);
 
+  const getAccessToken = useCallback(() => {
+    const dauth_state_ls = localStorage.getItem(DAUTH_STATE);
+    return dauth_state_ls;
+  }, []);
+
   const memoProvider = useMemo(
     () => ({
       ...dauthState,
       loginWithRedirect,
       logout,
+      getAccessToken,
     }),
-    [dauthState, loginWithRedirect, logout]
+    [dauthState, loginWithRedirect, logout, getAccessToken]
   );
 
   return (
@@ -76,9 +81,7 @@ const DauthContext = createContext(initialDauthState);
 export const useDauth = () => {
   const context = useContext(DauthContext);
   if (!context) {
-    throw new Error(
-      'useMyContext debe ser utilizado dentro de un MyContextProvider'
-    );
+    throw new Error('useDauth must be used inside DauthProvider');
   }
   return context;
 };

@@ -2,7 +2,6 @@ import { getServerBasePath } from './utils/config';
 
 export const getTenantUserAPI = async (
   domainName: string,
-  ssid: string,
   token: string
 ): Promise<any> => {
   const params = {
@@ -13,7 +12,7 @@ export const getTenantUserAPI = async (
     },
   };
   const response = await fetch(
-    `${getServerBasePath({ domainName })}/get-tenant-user/${ssid}`,
+    `${getServerBasePath({ domainName })}/get-tenant-user/${domainName}`,
     params
   );
   const data = await response.json();
