@@ -56,7 +56,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
 
   const getAccessToken = useCallback(() => {
     const dauth_state_ls = localStorage.getItem(DAUTH_STATE);
-    return dauth_state_ls;
+    return dauth_state_ls ?? 'token-not-found';
   }, []);
 
   const memoProvider = useMemo(
@@ -64,7 +64,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       ...dauthState,
       loginWithRedirect,
       logout,
-      getAccessToken,
+      getAccessToken: () => getAccessToken() || '',
     }),
     [dauthState, loginWithRedirect, logout, getAccessToken]
   );

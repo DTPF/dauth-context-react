@@ -1,6 +1,7 @@
 export interface IDauthUser {
   _id: string;
-  ssid: string;
+  dauthLicense?: string;
+  sid: string;
   name: string;
   lastname: string;
   nickname: string;
@@ -8,12 +9,15 @@ export interface IDauthUser {
   is_verified: boolean;
   language: string;
   avatar: string;
+  role: string;
+  tel_prefix: string;
+  tel_suffix: string;
   createdAt: Date;
   updatedAt: Date;
   last_login: Date;
 }
 
-export interface IDauthDomain {
+interface IDauthDomainState {
   name: string;
   loginRedirect: string;
   allowedOrigins: string[];
@@ -21,22 +25,22 @@ export interface IDauthDomain {
 
 export interface IDauthState {
   user: IDauthUser;
-  domain: IDauthDomain;
+  domain: IDauthDomainState;
   isLoading: boolean;
   isAuthenticated: boolean;
   loginWithRedirect: () => void;
   logout: () => void;
-  getAccessToken: () => void;
+  getAccessToken: () => string;
 }
 
 const initialDauthState: IDauthState = {
   user: {} as IDauthUser,
-  domain: {} as IDauthDomain,
-  isLoading: true,
+  domain: {} as IDauthDomainState,
+  isLoading: false,
   isAuthenticated: false,
   loginWithRedirect: () => {},
   logout: () => {},
-  getAccessToken: () => {},
+  getAccessToken: () => initialDauthState.getAccessToken() || '',
 };
 
 export default initialDauthState;
