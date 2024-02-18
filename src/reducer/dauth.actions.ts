@@ -87,7 +87,9 @@ export async function setLogoutAction({ dispatch }: { dispatch: any }) {
   dispatch({
     type: DauthTypes.LOGIN,
     payload: {
-      user: {},
+      user: {
+        language: window.document.documentElement.getAttribute('lang') || 'es',
+      },
       domain: {},
       isAuthenticated: false,
     },
@@ -103,7 +105,7 @@ type TSetUpdateAction = {
   dispatch: any;
   domainName: string;
   user: Partial<IDauthUser>;
-  token: string;
+  token: string | null;
 };
 export async function setUpdateUserAction({
   dispatch,
@@ -111,7 +113,15 @@ export async function setUpdateUserAction({
   user,
   token,
 }: TSetUpdateAction) {
-  dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
+  if (user.language) {
+    window.document.documentElement.setAttribute('lang', user.language);
+  }
+  if (!token) {
+    return dispatch({
+      type: DauthTypes.UPDATE_USER,
+      payload: user,
+    });
+  }
   try {
     const getUserFetch = await updateUserAPI(domainName, user, token);
     if (getUserFetch.response.status === 200) {
@@ -125,10 +135,5 @@ export async function setUpdateUserAction({
     }
   } catch (error) {
     console.log('Update user error', error);
-  } finally {
-    dispatch({
-      type: DauthTypes.SET_IS_LOADING,
-      payload: { isLoading: false },
-    });
   }
 }

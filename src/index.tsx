@@ -73,7 +73,6 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       avatar,
     }: Partial<IDauthUser>) => {
       const token_ls = localStorage.getItem(DAUTH_STATE);
-      if (!token_ls || !language) return;
       const user = {
         name,
         lastname,

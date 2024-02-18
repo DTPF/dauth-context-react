@@ -43,7 +43,9 @@ export interface IDauthState {
 }
 
 const initialDauthState: IDauthState = {
-  user: {} as IDauthUser,
+  user: {
+    language: window.document.documentElement.getAttribute('lang') || 'es',
+  } as IDauthUser,
   domain: {} as IDauthDomainState,
   isLoading: false,
   isAuthenticated: false,
