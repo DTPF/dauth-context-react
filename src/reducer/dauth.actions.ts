@@ -1,5 +1,6 @@
-import { getTenantUserAPI } from '../api/dauth.api';
+import { getUserAPI, updateUserAPI } from '../api/dauth.api';
 import { DAUTH_STATE } from '../constants';
+import { IDauthUser } from '../initialDauthState';
 import * as DauthTypes from './dauth.types';
 
 type TSetDauthStateAction = {
@@ -14,7 +15,7 @@ export async function setDauthStateAction({
 }: TSetDauthStateAction) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   try {
-    const getUserFetch = await getTenantUserAPI(domainName, dauth_state);
+    const getUserFetch = await getUserAPI(domainName, dauth_state);
     if (getUserFetch.response.status === 200) {
       dispatch({
         type: DauthTypes.LOGIN,
@@ -56,7 +57,7 @@ export async function setAutoLoginAction({
 }: TSetAutoLoginAction) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   try {
-    const getUserFetch = await getTenantUserAPI(domainName, dauth_state_ls);
+    const getUserFetch = await getUserAPI(domainName, dauth_state_ls);
     if (getUserFetch.response.status === 200) {
       dispatch({
         type: DauthTypes.LOGIN,
@@ -96,4 +97,38 @@ export async function setLogoutAction({ dispatch }: { dispatch: any }) {
     type: DauthTypes.SET_IS_LOADING,
     payload: { isLoading: false },
   });
+}
+
+type TSetUpdateAction = {
+  dispatch: any;
+  domainName: string;
+  user: Partial<IDauthUser>;
+  token: string;
+};
+export async function setUpdateUserAction({
+  dispatch,
+  domainName,
+  user,
+  token,
+}: TSetUpdateAction) {
+  dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
+  try {
+    const getUserFetch = await updateUserAPI(domainName, user, token);
+    if (getUserFetch.response.status === 200) {
+      return dispatch({
+        type: DauthTypes.UPDATE_USER,
+        payload: user,
+      });
+    } else {
+      console.log('Update user error');
+      return;
+    }
+  } catch (error) {
+    console.log('Update user error', error);
+  } finally {
+    dispatch({
+      type: DauthTypes.SET_IS_LOADING,
+      payload: { isLoading: false },
+    });
+  }
 }

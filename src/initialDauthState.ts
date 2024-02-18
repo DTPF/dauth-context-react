@@ -31,6 +31,15 @@ export interface IDauthState {
   loginWithRedirect: () => void;
   logout: () => void;
   getAccessToken: () => string;
+  updateUser: ({
+    name,
+    lastname,
+    nickname,
+    tel_prefix,
+    tel_suffix,
+    language,
+    avatar,
+  }: Partial<IDauthUser>) => void;
 }
 
 const initialDauthState: IDauthState = {
@@ -41,6 +50,7 @@ const initialDauthState: IDauthState = {
   loginWithRedirect: () => {},
   logout: () => {},
   getAccessToken: () => initialDauthState.getAccessToken() || '',
+  updateUser: () => {},
 };
 
 export default initialDauthState;

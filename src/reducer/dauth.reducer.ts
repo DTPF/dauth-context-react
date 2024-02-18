@@ -18,6 +18,15 @@ export default function userReducer(state: any, action: any) {
         isLoading: payload.isLoading,
       };
 
+    case DauthTypes.UPDATE_USER:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...payload,
+        },
+      };
+
     default:
       return state;
   }

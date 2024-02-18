@@ -6,7 +6,10 @@ import React, {
   createContext,
   useContext,
 } from 'react';
-import initialDauthState, { IDauthState } from './initialDauthState';
+import initialDauthState, {
+  IDauthState,
+  IDauthUser,
+} from './initialDauthState';
 import userReducer from './reducer/dauth.reducer';
 import * as action from './reducer/dauth.actions';
 import { getClientBasePath } from './api/utils/config';
@@ -55,9 +58,40 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
   }, []);
 
   const getAccessToken = useCallback(() => {
-    const dauth_state_ls = localStorage.getItem(DAUTH_STATE);
-    return dauth_state_ls ?? 'token-not-found';
+    const token_ls = localStorage.getItem(DAUTH_STATE);
+    return token_ls ?? 'token-not-found';
   }, []);
+
+  const updateUser = useCallback(
+    ({
+      name,
+      lastname,
+      nickname,
+      tel_prefix,
+      tel_suffix,
+      language,
+      avatar,
+    }: Partial<IDauthUser>) => {
+      const token_ls = localStorage.getItem(DAUTH_STATE);
+      if (!token_ls || !language) return;
+      const user = {
+        name,
+        lastname,
+        nickname,
+        tel_prefix,
+        tel_suffix,
+        language,
+        avatar,
+      } as Partial<IDauthUser>;
+      return action.setUpdateUserAction({
+        dispatch,
+        domainName,
+        user,
+        token: token_ls,
+      });
+    },
+    [domainName]
+  );
 
   const memoProvider = useMemo(
     () => ({
@@ -65,8 +99,9 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       loginWithRedirect,
       logout,
       getAccessToken: () => getAccessToken() || '',
+      updateUser,
     }),
-    [dauthState, loginWithRedirect, logout, getAccessToken]
+    [dauthState, loginWithRedirect, logout, getAccessToken, updateUser]
   );
 
   return (
