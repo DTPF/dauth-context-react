@@ -27,6 +27,27 @@ export default function userReducer(state: any, action: any) {
         },
       };
 
+    case DauthTypes.SET_SEND_EMAIL_VERIFICATION_STATUS:
+      return {
+        ...state,
+        sev: {
+          ...state.sev,
+          status: {
+            type: payload.type,
+            message: payload.message,
+          },
+        },
+      };
+
+    case DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING:
+      return {
+        ...state,
+        sev: {
+          ...state.sev,
+          isLoading: payload,
+        },
+      };
+
     default:
       return state;
   }

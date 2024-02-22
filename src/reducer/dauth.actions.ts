@@ -1,4 +1,8 @@
-import { getUserAPI, updateUserAPI } from '../api/dauth.api';
+import {
+  getUserAPI,
+  sendEmailVerificationAPI,
+  updateUserAPI,
+} from '../api/dauth.api';
 import { DAUTH_STATE } from '../constants';
 import { IDauthUser } from '../initialDauthState';
 import * as DauthTypes from './dauth.types';
@@ -135,5 +139,59 @@ export async function setUpdateUserAction({
     }
   } catch (error) {
     console.log('Update user error', error);
+  }
+}
+
+type TSetSendEmailVerificationAction = {
+  dispatch: any;
+  domainName: string;
+  token: string;
+};
+export async function sendEmailVerificationAction({
+  dispatch,
+  domainName,
+  token,
+}: TSetSendEmailVerificationAction) {
+  dispatch({
+    type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING,
+    payload: true,
+  });
+  dispatch({
+    type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_STATUS,
+    payload: { type: 'info', message: 'Sending email verification...' },
+  });
+  try {
+    const sendEmailFetch = await sendEmailVerificationAPI(domainName, token);
+    if (sendEmailFetch.response.status === 200) {
+      dispatch({
+        type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_STATUS,
+        payload: { type: 'success', message: sendEmailFetch.data.message },
+      });
+      return dispatch({
+        type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING,
+        payload: false,
+      });
+    } else {
+      dispatch({
+        type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_STATUS,
+        payload: { type: 'error', message: sendEmailFetch.data.message },
+      });
+      return dispatch({
+        type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING,
+        payload: false,
+      });
+    }
+  } catch (error) {
+    dispatch({
+      type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_STATUS,
+      payload: {
+        type: 'error',
+        message: 'Send email verification fetch error',
+      },
+    });
+    return dispatch({
+      type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING,
+      payload: false,
+    });
   }
 }

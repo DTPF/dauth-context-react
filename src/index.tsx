@@ -92,6 +92,16 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     [domainName]
   );
 
+  const sendEmailVerification = useCallback(() => {
+    const token_ls = localStorage.getItem(DAUTH_STATE);
+    if (!token_ls) return;
+    return action.sendEmailVerificationAction({
+      dispatch,
+      domainName,
+      token: token_ls,
+    });
+  }, [domainName]);
+
   const memoProvider = useMemo(
     () => ({
       ...dauthState,
@@ -99,8 +109,16 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       logout,
       getAccessToken: () => getAccessToken() || '',
       updateUser,
+      sendEmailVerification,
     }),
-    [dauthState, loginWithRedirect, logout, getAccessToken, updateUser]
+    [
+      dauthState,
+      loginWithRedirect,
+      logout,
+      getAccessToken,
+      updateUser,
+      sendEmailVerification,
+    ]
   );
 
   return (

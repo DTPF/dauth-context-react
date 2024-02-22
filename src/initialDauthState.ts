@@ -40,7 +40,19 @@ export interface IDauthState {
     language,
     avatar,
   }: Partial<IDauthUser>) => void;
+  // Send email verification
+  sev: {
+    status: IActionStatus;
+    isLoading: boolean;
+  };
+  sendEmailVerification: () => void;
 }
+
+export interface IActionStatus {
+  type: TStatusTypes;
+  message: string;
+}
+export type TStatusTypes = 'success' | 'error' | 'info' | 'warning';
 
 const initialDauthState: IDauthState = {
   user: {
@@ -53,6 +65,15 @@ const initialDauthState: IDauthState = {
   logout: () => {},
   getAccessToken: () => initialDauthState.getAccessToken() || '',
   updateUser: () => {},
+  // Send email verification
+  sev: {
+    status: {
+      type: 'info',
+      message: 'Sending email verification...',
+    } as IActionStatus,
+    isLoading: false,
+  },
+  sendEmailVerification: () => {},
 };
 
 export default initialDauthState;
