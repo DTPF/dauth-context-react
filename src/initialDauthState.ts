@@ -40,6 +40,7 @@ export interface IDauthState {
     language,
     avatar,
   }: Partial<IDauthUser>) => void;
+  updateUserWithRedirect: () => void;
   // Send email verification
   sev: {
     status: IActionStatus;
@@ -65,6 +66,7 @@ const initialDauthState: IDauthState = {
   logout: () => {},
   getAccessToken: () => initialDauthState.getAccessToken() || '',
   updateUser: () => {},
+  updateUserWithRedirect: () => {},
   // Send email verification
   sev: {
     status: {

@@ -92,6 +92,14 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     [domainName]
   );
 
+  const updateUserWithRedirect = useCallback(() => {
+    const token_ls = localStorage.getItem(DAUTH_STATE);
+    if (!token_ls) return;
+    return window.location.replace(
+      `${getClientBasePath({ domainName })}/t-update-user/${sid}/${token_ls}`
+    );
+  }, [domainName, sid]);
+
   const sendEmailVerification = useCallback(() => {
     const token_ls = localStorage.getItem(DAUTH_STATE);
     if (!token_ls) return;
@@ -109,6 +117,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       logout,
       getAccessToken: () => getAccessToken() || '',
       updateUser,
+      updateUserWithRedirect,
       sendEmailVerification,
     }),
     [
@@ -117,6 +126,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       logout,
       getAccessToken,
       updateUser,
+      updateUserWithRedirect,
       sendEmailVerification,
     ]
   );
