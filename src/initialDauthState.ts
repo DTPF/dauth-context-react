@@ -8,7 +8,10 @@ export interface IDauthUser {
   email: string;
   is_verified: boolean;
   language: string;
-  avatar: string;
+  avatar: {
+    id: string;
+    url: string;
+  };
   role: string;
   tel_prefix: string;
   tel_suffix: string;
