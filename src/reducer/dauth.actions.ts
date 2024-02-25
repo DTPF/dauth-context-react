@@ -131,7 +131,7 @@ export async function setUpdateUserAction({
     if (getUserFetch.response.status === 200) {
       return dispatch({
         type: DauthTypes.UPDATE_USER,
-        payload: user,
+        payload: getUserFetch.data.user,
       });
     } else {
       console.log('Update user error');
