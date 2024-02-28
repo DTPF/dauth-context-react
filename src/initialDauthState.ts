@@ -20,7 +20,7 @@ export interface IDauthUser {
   last_login: Date;
 }
 
-interface IDauthDomainState {
+export interface IDauthDomainState {
   name: string;
   loginRedirect: string;
   allowedOrigins: string[];
@@ -33,7 +33,7 @@ export interface IDauthState {
   isAuthenticated: boolean;
   loginWithRedirect: () => void;
   logout: () => void;
-  getAccessToken: () => string;
+  getAccessToken: () => any;
   updateUser: ({
     name,
     lastname,

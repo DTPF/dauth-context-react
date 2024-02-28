@@ -28,6 +28,17 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
   const [ds, dispatch] = useReducer(userReducer, initialDauthState);
   const dauthState = ds as IDauthState;
 
+  // Check token periodically
+  useEffect(() => {
+    if (!dauthState.isAuthenticated) return;
+    let interval = setInterval(() => {
+      const token_ls = localStorage.getItem(DAUTH_STATE);
+      if (!token_ls) return;
+      action.checkTokenAction({ dispatch, domainName, sid, token: token_ls });
+    }, 1000 * 60 * 2);
+    return () => clearInterval(interval);
+  }, []);
+
   // Catch login redirect
   useEffect(() => {
     const queryString = window.location.search;
@@ -37,15 +48,15 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     if (dauth_state && !dauthState.isAuthenticated) {
       action.setDauthStateAction({ dispatch, dauth_state, domainName });
     }
-  }, [dauthState.isAuthenticated, domainName]);
+  }, []);
 
   // Auto Login
   useEffect(() => {
     const dauth_state_ls = localStorage.getItem(DAUTH_STATE);
     if (dauth_state_ls && !dauthState.isAuthenticated) {
-      action.setAutoLoginAction({ dispatch, dauth_state_ls, domainName });
+      action.setAutoLoginAction({ dispatch, dauth_state_ls, domainName, sid });
     }
-  }, [dauthState.isAuthenticated, domainName]);
+  }, []);
 
   const loginWithRedirect = useCallback(() => {
     return window.location.replace(
@@ -57,9 +68,9 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     return action.setLogoutAction({ dispatch });
   }, []);
 
-  const getAccessToken = useCallback(() => {
-    const token_ls = localStorage.getItem(DAUTH_STATE);
-    return token_ls ?? 'token-not-found';
+  const getAccessToken = useCallback(async () => {
+    const token = await action.getAccessTokenAction({ dispatch, domainName });
+    return token;
   }, []);
 
   const updateUser = useCallback(

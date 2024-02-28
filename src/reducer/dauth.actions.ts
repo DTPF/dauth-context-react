@@ -1,10 +1,12 @@
 import {
   getUserAPI,
+  refreshAccessTokenAPI,
   sendEmailVerificationAPI,
   updateUserAPI,
 } from '../api/dauth.api';
+import { getClientBasePath } from '../api/utils/config';
 import { DAUTH_STATE } from '../constants';
-import { IDauthUser } from '../initialDauthState';
+import { IDauthDomainState, IDauthUser } from '../initialDauthState';
 import * as DauthTypes from './dauth.types';
 
 type TSetDauthStateAction = {
@@ -36,11 +38,11 @@ export async function setDauthStateAction({
       );
       return localStorage.setItem(DAUTH_STATE, dauth_state);
     } else {
-      return localStorage.removeItem(DAUTH_STATE);
+      return resetUser(dispatch);
     }
   } catch (error) {
-    localStorage.removeItem(DAUTH_STATE);
     console.log(error);
+    return resetUser(dispatch);
   } finally {
     dispatch({
       type: DauthTypes.SET_IS_LOADING,
@@ -53,31 +55,51 @@ type TSetAutoLoginAction = {
   dispatch: any;
   dauth_state_ls: string;
   domainName: string;
+  sid: string;
 };
 export async function setAutoLoginAction({
   dispatch,
   dauth_state_ls,
   domainName,
+  sid,
 }: TSetAutoLoginAction) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   try {
-    const getUserFetch = await getUserAPI(domainName, dauth_state_ls);
-    if (getUserFetch.response.status === 200) {
-      dispatch({
-        type: DauthTypes.LOGIN,
-        payload: {
-          user: getUserFetch.data.user,
-          domain: getUserFetch.data.domain,
-          isAuthenticated: true,
-        },
-      });
-      localStorage.setItem(DAUTH_STATE, dauth_state_ls);
+    const refreshAccessTokenFetch = await refreshAccessTokenAPI(
+      domainName,
+      dauth_state_ls
+    );
+    if (refreshAccessTokenFetch.response.status === 200) {
+      const getUserFetch = await getUserAPI(domainName, dauth_state_ls);
+      if (getUserFetch.response.status === 200) {
+        dispatch({
+          type: DauthTypes.LOGIN,
+          payload: {
+            user: getUserFetch.data.user,
+            domain: getUserFetch.data.domain,
+            isAuthenticated: true,
+          },
+        });
+        localStorage.setItem(
+          DAUTH_STATE,
+          refreshAccessTokenFetch.data.accessToken
+        );
+        return;
+      } else {
+        window.location.replace(
+          `${getClientBasePath({ domainName })}/t-sign/${sid}`
+        );
+        return resetUser(dispatch);
+      }
     } else {
-      localStorage.removeItem(DAUTH_STATE);
+      window.location.replace(
+        `${getClientBasePath({ domainName })}/t-sign/${sid}`
+      );
+      return resetUser(dispatch);
     }
   } catch (error) {
-    localStorage.removeItem(DAUTH_STATE);
     console.log(error);
+    return resetUser(dispatch);
   } finally {
     dispatch({
       type: DauthTypes.SET_IS_LOADING,
@@ -134,7 +156,7 @@ export async function setUpdateUserAction({
         payload: getUserFetch.data.user,
       });
     } else {
-      console.log('Update user error');
+      console.log('Update user error', getUserFetch.data.message);
       return;
     }
   } catch (error) {
@@ -195,3 +217,73 @@ export async function sendEmailVerificationAction({
     });
   }
 }
+
+export async function checkTokenAction({
+  dispatch,
+  domainName,
+  sid,
+  token,
+}: {
+  dispatch: any;
+  domainName: string;
+  sid: string;
+  token: string;
+}) {
+  try {
+    const refreshAccessTokenFetch = await refreshAccessTokenAPI(
+      domainName,
+      token
+    );
+    if (refreshAccessTokenFetch.response.status === 200) {
+      return;
+    } else {
+      window.location.replace(
+        `${getClientBasePath({ domainName })}/t-sign/${sid}`
+      );
+      return resetUser(dispatch);
+    }
+  } catch (error) {
+    resetUser(dispatch);
+    throw error;
+  }
+}
+
+export async function getAccessTokenAction({
+  dispatch,
+  domainName,
+}: {
+  dispatch: any;
+  domainName: string;
+}) {
+  const token_ls = localStorage.getItem(DAUTH_STATE);
+  if (!token_ls) return;
+  try {
+    const refreshAccessTokenFetch = await refreshAccessTokenAPI(
+      domainName,
+      token_ls
+    );
+    if (refreshAccessTokenFetch.response.status === 200) {
+      return refreshAccessTokenFetch.data.accessToken ?? token_ls;
+    } else {
+      resetUser(dispatch);
+      return 'token-not-found';
+    }
+  } catch (error) {
+    resetUser(dispatch);
+    throw error;
+  }
+}
+
+///////////////////////////////////////////
+//////////////////////////////////////////
+export const resetUser = (dispatch: any) => {
+  localStorage.removeItem(DAUTH_STATE);
+  return dispatch({
+    type: DauthTypes.LOGIN,
+    payload: {
+      user: {} as IDauthUser,
+      domain: {} as IDauthDomainState,
+      isAuthenticated: false,
+    },
+  });
+};

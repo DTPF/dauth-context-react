@@ -8,7 +8,7 @@ export const getUserAPI = async (
   const params = {
     method: 'GET',
     headers: {
-      Authorization: `${token}`,
+      Authorization: token,
       'Content-Type': 'application/json',
     },
   };
@@ -28,7 +28,7 @@ export const updateUserAPI = async (
   const params = {
     method: 'PATCH',
     headers: {
-      Authorization: `${token}`,
+      Authorization: token,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(user),
@@ -48,7 +48,7 @@ export const sendEmailVerificationAPI = async (
   const params = {
     method: 'GET',
     headers: {
-      Authorization: `${token}`,
+      Authorization: token,
       'Content-Type': 'application/json',
     },
   };
@@ -56,6 +56,27 @@ export const sendEmailVerificationAPI = async (
     `${getServerBasePath({
       domainName,
     })}/t-resend-email-verification/${domainName}`,
+    params
+  );
+  const data = await response.json();
+  return { response, data };
+};
+
+export const refreshAccessTokenAPI = async (
+  domainName: string,
+  token: string
+): Promise<any> => {
+  const params = {
+    method: 'GET',
+    headers: {
+      Authorization: token,
+      'Content-Type': 'application/json',
+    },
+  };
+  const response = await fetch(
+    `${getServerBasePath({
+      domainName,
+    })}/t-refresh-access-token/${domainName}`,
     params
   );
   const data = await response.json();
