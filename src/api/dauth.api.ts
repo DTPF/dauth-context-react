@@ -13,7 +13,7 @@ export const getUserAPI = async (
     },
   };
   const response = await fetch(
-    `${getServerBasePath({ domainName })}/t-get-user`,
+    `${getServerBasePath({ domainName })}/t-get-user/${domainName}`,
     params
   );
   const data = await response.json();
@@ -34,7 +34,7 @@ export const updateUserAPI = async (
     body: JSON.stringify(user),
   };
   const response = await fetch(
-    `${getServerBasePath({ domainName })}/t-update-user`,
+    `${getServerBasePath({ domainName })}/t-update-user/${domainName}`,
     params
   );
   const data = await response.json();
@@ -55,7 +55,7 @@ export const sendEmailVerificationAPI = async (
   const response = await fetch(
     `${getServerBasePath({
       domainName,
-    })}/t-resend-email-verification`,
+    })}/t-resend-email-verification/${domainName}`,
     params
   );
   const data = await response.json();
