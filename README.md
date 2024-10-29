@@ -1,3 +1,6 @@
+# IMPORTANT
+This package 
+
 # Dauth React Context
 This is a simple example of how to use a custom `DauthProvider`, and how to utilize the `Dauth` authentication context in your React application.
 

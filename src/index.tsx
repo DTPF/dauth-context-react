@@ -60,7 +60,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
 
   const loginWithRedirect = useCallback(() => {
     return window.location.replace(
-      `${getClientBasePath({ domainName })}/t-sign/${sid}`
+      `${getClientBasePath({ domainName })}/t-signin/${sid}`
     );
   }, [domainName, sid]);
 

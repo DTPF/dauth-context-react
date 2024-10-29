@@ -87,13 +87,13 @@ export async function setAutoLoginAction({
         return;
       } else {
         window.location.replace(
-          `${getClientBasePath({ domainName })}/t-sign/${sid}`
+          `${getClientBasePath({ domainName })}/t-signin/${sid}`
         );
         return resetUser(dispatch);
       }
     } else {
       window.location.replace(
-        `${getClientBasePath({ domainName })}/t-sign/${sid}`
+        `${getClientBasePath({ domainName })}/t-signin/${sid}`
       );
       return resetUser(dispatch);
     }
@@ -238,7 +238,7 @@ export async function checkTokenAction({
       return;
     } else {
       window.location.replace(
-        `${getClientBasePath({ domainName })}/t-sign/${sid}`
+        `${getClientBasePath({ domainName })}/t-signin/${sid}`
       );
       return resetUser(dispatch);
     }
