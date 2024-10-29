@@ -1,1 +1,1 @@
-export const DAUTH_STATE = 'dauth_state';
+export const TOKEN_LS = 'dauth_state';

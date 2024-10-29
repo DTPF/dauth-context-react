@@ -6,14 +6,12 @@ import React, {
   createContext,
   useContext,
 } from 'react';
-import initialDauthState, {
-  IDauthState,
-  IDauthUser,
-} from './initialDauthState';
+import initialDauthState, { IDauthUser } from './initialDauthState';
 import userReducer from './reducer/dauth.reducer';
 import * as action from './reducer/dauth.actions';
 import { getClientBasePath } from './api/utils/config';
-import { DAUTH_STATE } from './constants';
+import { TOKEN_LS } from './constants';
+import { routes } from './routes';
 
 interface DauthProviderProps {
   domainName: string;
@@ -25,14 +23,13 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
   props: DauthProviderProps
 ) => {
   const { domainName, sid, children } = props;
-  const [ds, dispatch] = useReducer(userReducer, initialDauthState);
-  const dauthState = ds as IDauthState;
+  const [dauthState, dispatch] = useReducer(userReducer, initialDauthState);
 
   // Check token periodically
   useEffect(() => {
     if (!dauthState.isAuthenticated) return;
     let interval = setInterval(() => {
-      const token_ls = localStorage.getItem(DAUTH_STATE);
+      const token_ls = localStorage.getItem(TOKEN_LS);
       if (!token_ls) return;
       action.checkTokenAction({ dispatch, domainName, sid, token: token_ls });
     }, 1000 * 60 * 2);
@@ -44,15 +41,15 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     const queryString = window.location.search;
     if (!queryString) return;
     const urlParams = new URLSearchParams(queryString);
-    const dauth_state = urlParams.get(DAUTH_STATE);
-    if (dauth_state && !dauthState.isAuthenticated) {
-      action.setDauthStateAction({ dispatch, dauth_state, domainName });
+    const token_url = urlParams.get(TOKEN_LS);
+    if (token_url && !dauthState.isAuthenticated) {
+      action.setDauthStateAction({ dispatch, token: token_url, domainName });
     }
   }, []);
 
   // Auto Login
   useEffect(() => {
-    const dauth_state_ls = localStorage.getItem(DAUTH_STATE);
+    const dauth_state_ls = localStorage.getItem(TOKEN_LS);
     if (dauth_state_ls && !dauthState.isAuthenticated) {
       action.setAutoLoginAction({ dispatch, dauth_state_ls, domainName, sid });
     }
@@ -60,7 +57,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
 
   const loginWithRedirect = useCallback(() => {
     return window.location.replace(
-      `${getClientBasePath({ domainName })}/t-signin/${sid}`
+      `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
     );
   }, [domainName, sid]);
 
@@ -70,11 +67,11 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
 
   const getAccessToken = useCallback(async () => {
     const token = await action.getAccessTokenAction({ dispatch, domainName });
-    return token;
+    return token as string;
   }, []);
 
   const updateUser = useCallback(
-    ({
+    async ({
       name,
       lastname,
       nickname,
@@ -83,7 +80,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       language,
       avatar,
     }: Partial<IDauthUser>) => {
-      const token_ls = localStorage.getItem(DAUTH_STATE);
+      const token_ls = localStorage.getItem(TOKEN_LS);
       const user = {
         name,
         lastname,
@@ -93,32 +90,34 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
         language,
         avatar,
       } as Partial<IDauthUser>;
-      return action.setUpdateUserAction({
+      return (await action.setUpdateUserAction({
         dispatch,
         domainName,
         user,
         token: token_ls,
-      });
+      })) as boolean;
     },
     [domainName]
   );
 
   const updateUserWithRedirect = useCallback(() => {
-    const token_ls = localStorage.getItem(DAUTH_STATE);
+    const token_ls = localStorage.getItem(TOKEN_LS);
     if (!token_ls) return;
     return window.location.replace(
-      `${getClientBasePath({ domainName })}/t-update-user/${sid}/${token_ls}`
+      `${getClientBasePath({ domainName })}/${
+        routes.tenantUpdateUser
+      }/${sid}/${token_ls}`
     );
   }, [domainName, sid]);
 
-  const sendEmailVerification = useCallback(() => {
-    const token_ls = localStorage.getItem(DAUTH_STATE);
-    if (!token_ls) return;
-    return action.sendEmailVerificationAction({
+  const sendEmailVerification = useCallback(async () => {
+    const token_ls = localStorage.getItem(TOKEN_LS);
+    if (!token_ls) return false;
+    return (await action.sendEmailVerificationAction({
       dispatch,
       domainName,
       token: token_ls,
-    });
+    })) as boolean;
   }, [domainName]);
 
   const memoProvider = useMemo(
@@ -126,7 +125,7 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       ...dauthState,
       loginWithRedirect,
       logout,
-      getAccessToken: () => getAccessToken() || '',
+      getAccessToken,
       updateUser,
       updateUserWithRedirect,
       sendEmailVerification,

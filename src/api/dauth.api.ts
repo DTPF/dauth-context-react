@@ -1,4 +1,5 @@
 import { IDauthUser } from '../initialDauthState';
+import { routes } from '../routes';
 import { getServerBasePath } from './utils/config';
 
 export const getUserAPI = async (
@@ -13,7 +14,9 @@ export const getUserAPI = async (
     },
   };
   const response = await fetch(
-    `${getServerBasePath({ domainName })}/t-get-user/${domainName}`,
+    `${getServerBasePath({ domainName })}/${
+      routes.tenantGetUser
+    }/${domainName}`,
     params
   );
   const data = await response.json();
@@ -34,7 +37,9 @@ export const updateUserAPI = async (
     body: JSON.stringify(user),
   };
   const response = await fetch(
-    `${getServerBasePath({ domainName })}/t-update-user/${domainName}`,
+    `${getServerBasePath({ domainName })}/${
+      routes.tenantUpdateUser
+    }/${domainName}`,
     params
   );
   const data = await response.json();
@@ -53,9 +58,9 @@ export const sendEmailVerificationAPI = async (
     },
   };
   const response = await fetch(
-    `${getServerBasePath({
-      domainName,
-    })}/t-resend-email-verification/${domainName}`,
+    `${getServerBasePath({ domainName })}/${
+      routes.tenantResendEmailVerification
+    }/${domainName}`,
     params
   );
   const data = await response.json();
@@ -74,9 +79,9 @@ export const refreshAccessTokenAPI = async (
     },
   };
   const response = await fetch(
-    `${getServerBasePath({
-      domainName,
-    })}/t-refresh-access-token/${domainName}`,
+    `${getServerBasePath({ domainName })}/${
+      routes.tenantRefreshAccessToken
+    }/${domainName}`,
     params
   );
   const data = await response.json();

@@ -33,7 +33,7 @@ export interface IDauthState {
   isAuthenticated: boolean;
   loginWithRedirect: () => void;
   logout: () => void;
-  getAccessToken: () => any;
+  getAccessToken: () => Promise<string>;
   updateUser: ({
     name,
     lastname,
@@ -42,14 +42,14 @@ export interface IDauthState {
     tel_suffix,
     language,
     avatar,
-  }: Partial<IDauthUser>) => void;
+  }: Partial<IDauthUser>) => Promise<boolean>;
   updateUserWithRedirect: () => void;
   // Send email verification
-  sev: {
+  sendEmailVerificationStatus: {
     status: IActionStatus;
     isLoading: boolean;
   };
-  sendEmailVerification: () => void;
+  sendEmailVerification: () => Promise<boolean>;
 }
 
 export interface IActionStatus {
@@ -67,18 +67,18 @@ const initialDauthState: IDauthState = {
   isAuthenticated: false,
   loginWithRedirect: () => {},
   logout: () => {},
-  getAccessToken: () => initialDauthState.getAccessToken() || '',
-  updateUser: () => {},
+  getAccessToken: () => Promise.resolve(''),
+  updateUser: () => Promise.resolve(false),
   updateUserWithRedirect: () => {},
   // Send email verification
-  sev: {
+  sendEmailVerificationStatus: {
     status: {
       type: 'info',
       message: 'Sending email verification...',
     } as IActionStatus,
     isLoading: false,
   },
-  sendEmailVerification: () => {},
+  sendEmailVerification: () => Promise.resolve(false),
 };
 
 export default initialDauthState;

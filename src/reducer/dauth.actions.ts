@@ -5,23 +5,24 @@ import {
   updateUserAPI,
 } from '../api/dauth.api';
 import { getClientBasePath } from '../api/utils/config';
-import { DAUTH_STATE } from '../constants';
+import { TOKEN_LS } from '../constants';
 import { IDauthDomainState, IDauthUser } from '../initialDauthState';
+import { routes } from '../routes';
 import * as DauthTypes from './dauth.types';
 
 type TSetDauthStateAction = {
-  dispatch: any;
-  dauth_state: string;
+  dispatch: React.Dispatch<any>;
+  token: string;
   domainName: string;
 };
 export async function setDauthStateAction({
   dispatch,
-  dauth_state,
+  token,
   domainName,
 }: TSetDauthStateAction) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   try {
-    const getUserFetch = await getUserAPI(domainName, dauth_state);
+    const getUserFetch = await getUserAPI(domainName, token);
     if (getUserFetch.response.status === 200) {
       dispatch({
         type: DauthTypes.LOGIN,
@@ -36,7 +37,7 @@ export async function setDauthStateAction({
         document.title,
         getUserFetch.data.domain.loginRedirect
       );
-      return localStorage.setItem(DAUTH_STATE, dauth_state);
+      return localStorage.setItem(TOKEN_LS, token);
     } else {
       return resetUser(dispatch);
     }
@@ -52,7 +53,7 @@ export async function setDauthStateAction({
 }
 
 type TSetAutoLoginAction = {
-  dispatch: any;
+  dispatch: React.Dispatch<any>;
   dauth_state_ls: string;
   domainName: string;
   sid: string;
@@ -81,19 +82,19 @@ export async function setAutoLoginAction({
           },
         });
         localStorage.setItem(
-          DAUTH_STATE,
+          TOKEN_LS,
           refreshAccessTokenFetch.data.accessToken
         );
         return;
       } else {
         window.location.replace(
-          `${getClientBasePath({ domainName })}/t-signin/${sid}`
+          `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
         );
         return resetUser(dispatch);
       }
     } else {
       window.location.replace(
-        `${getClientBasePath({ domainName })}/t-signin/${sid}`
+        `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
       );
       return resetUser(dispatch);
     }
@@ -108,7 +109,11 @@ export async function setAutoLoginAction({
   }
 }
 
-export async function setLogoutAction({ dispatch }: { dispatch: any }) {
+export function setLogoutAction({
+  dispatch,
+}: {
+  dispatch: React.Dispatch<any>;
+}) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   dispatch({
     type: DauthTypes.LOGIN,
@@ -120,7 +125,7 @@ export async function setLogoutAction({ dispatch }: { dispatch: any }) {
       isAuthenticated: false,
     },
   });
-  localStorage.removeItem(DAUTH_STATE);
+  localStorage.removeItem(TOKEN_LS);
   return dispatch({
     type: DauthTypes.SET_IS_LOADING,
     payload: { isLoading: false },
@@ -128,7 +133,7 @@ export async function setLogoutAction({ dispatch }: { dispatch: any }) {
 }
 
 type TSetUpdateAction = {
-  dispatch: any;
+  dispatch: React.Dispatch<any>;
   domainName: string;
   user: Partial<IDauthUser>;
   token: string | null;
@@ -143,29 +148,32 @@ export async function setUpdateUserAction({
     window.document.documentElement.setAttribute('lang', user.language);
   }
   if (!token) {
-    return dispatch({
+    dispatch({
       type: DauthTypes.UPDATE_USER,
       payload: user,
     });
+    return false;
   }
   try {
     const getUserFetch = await updateUserAPI(domainName, user, token);
     if (getUserFetch.response.status === 200) {
-      return dispatch({
+      dispatch({
         type: DauthTypes.UPDATE_USER,
         payload: getUserFetch.data.user,
       });
+      return true;
     } else {
       console.log('Update user error', getUserFetch.data.message);
-      return;
+      return false;
     }
   } catch (error) {
     console.log('Update user error', error);
+    return false;
   }
 }
 
 type TSetSendEmailVerificationAction = {
-  dispatch: any;
+  dispatch: React.Dispatch<any>;
   domainName: string;
   token: string;
 };
@@ -189,19 +197,21 @@ export async function sendEmailVerificationAction({
         type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_STATUS,
         payload: { type: 'success', message: sendEmailFetch.data.message },
       });
-      return dispatch({
+      dispatch({
         type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING,
         payload: false,
       });
+      return true;
     } else {
       dispatch({
         type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_STATUS,
         payload: { type: 'error', message: sendEmailFetch.data.message },
       });
-      return dispatch({
+      dispatch({
         type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING,
         payload: false,
       });
+      return false;
     }
   } catch (error) {
     dispatch({
@@ -211,10 +221,11 @@ export async function sendEmailVerificationAction({
         message: 'Send email verification fetch error',
       },
     });
-    return dispatch({
+    dispatch({
       type: DauthTypes.SET_SEND_EMAIL_VERIFICATION_IS_LOADING,
       payload: false,
     });
+    return false;
   }
 }
 
@@ -224,7 +235,7 @@ export async function checkTokenAction({
   sid,
   token,
 }: {
-  dispatch: any;
+  dispatch: React.Dispatch<any>;
   domainName: string;
   sid: string;
   token: string;
@@ -238,7 +249,7 @@ export async function checkTokenAction({
       return;
     } else {
       window.location.replace(
-        `${getClientBasePath({ domainName })}/t-signin/${sid}`
+        `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
       );
       return resetUser(dispatch);
     }
@@ -252,10 +263,10 @@ export async function getAccessTokenAction({
   dispatch,
   domainName,
 }: {
-  dispatch: any;
+  dispatch: React.Dispatch<any>;
   domainName: string;
 }) {
-  const token_ls = localStorage.getItem(DAUTH_STATE);
+  const token_ls = localStorage.getItem(TOKEN_LS);
   if (!token_ls) return;
   try {
     const refreshAccessTokenFetch = await refreshAccessTokenAPI(
@@ -276,8 +287,8 @@ export async function getAccessTokenAction({
 
 ///////////////////////////////////////////
 //////////////////////////////////////////
-export const resetUser = (dispatch: any) => {
-  localStorage.removeItem(DAUTH_STATE);
+export const resetUser = (dispatch: React.Dispatch<any>) => {
+  localStorage.removeItem(TOKEN_LS);
   return dispatch({
     type: DauthTypes.LOGIN,
     payload: {
