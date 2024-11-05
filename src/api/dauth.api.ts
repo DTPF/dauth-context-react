@@ -1,11 +1,18 @@
-import { IDauthUser } from '../initialDauthState';
-import { routes } from '../routes';
+import { routes } from './utils/routes';
 import { getServerBasePath } from './utils/config';
+import { IDauthUser } from '../interfaces';
+import {
+  IgetUserAPIResponse,
+  IrefreshAccessTokenAPIResponse,
+  IsendEmailVerificationAPIResponse,
+  IupdateUserAPIResponse,
+  IverifyTokenAPIResponse,
+} from './interfaces/dauth.api.responses';
 
 export const getUserAPI = async (
   domainName: string,
   token: string
-): Promise<any> => {
+): Promise<IgetUserAPIResponse> => {
   const params = {
     method: 'GET',
     headers: {
@@ -27,7 +34,7 @@ export const updateUserAPI = async (
   domainName: string,
   user: Partial<IDauthUser>,
   token: string
-): Promise<any> => {
+): Promise<IupdateUserAPIResponse> => {
   const params = {
     method: 'PATCH',
     headers: {
@@ -49,7 +56,7 @@ export const updateUserAPI = async (
 export const sendEmailVerificationAPI = async (
   domainName: string,
   token: string
-): Promise<any> => {
+): Promise<IsendEmailVerificationAPIResponse> => {
   const params = {
     method: 'GET',
     headers: {
@@ -70,7 +77,7 @@ export const sendEmailVerificationAPI = async (
 export const refreshAccessTokenAPI = async (
   domainName: string,
   token: string
-): Promise<any> => {
+): Promise<IrefreshAccessTokenAPIResponse> => {
   const params = {
     method: 'GET',
     headers: {
@@ -81,6 +88,33 @@ export const refreshAccessTokenAPI = async (
   const response = await fetch(
     `${getServerBasePath({ domainName })}/${
       routes.tenantRefreshAccessToken
+    }/${domainName}`,
+    params
+  );
+  const data = await response.json();
+  return { response, data };
+};
+
+export const verifyTokenAPI = async ({
+  domainName,
+  tsk,
+  token,
+}: {
+  domainName: string;
+  tsk: string;
+  token: string;
+}): Promise<IverifyTokenAPIResponse> => {
+  const params = {
+    method: 'POST',
+    headers: {
+      Authorization: token,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ tsk }),
+  };
+  const response = await fetch(
+    `${getServerBasePath({ domainName })}/${
+      routes.tenantVerifyToken
     }/${domainName}`,
     params
   );

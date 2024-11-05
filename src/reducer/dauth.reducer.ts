@@ -1,4 +1,4 @@
-import { IDauthState } from '../initialDauthState';
+import { IDauthState } from '../interfaces';
 import * as DauthTypes from './dauth.types';
 
 export default function userReducer(state: IDauthState, action: any) {

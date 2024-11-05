@@ -6,60 +6,113 @@ import React, {
   createContext,
   useContext,
 } from 'react';
-import initialDauthState, { IDauthUser } from './initialDauthState';
+import initialDauthState from './initialDauthState';
 import userReducer from './reducer/dauth.reducer';
 import * as action from './reducer/dauth.actions';
 import { getClientBasePath } from './api/utils/config';
 import { TOKEN_LS } from './constants';
-import { routes } from './routes';
+import { routes } from './api/utils/routes';
+import { verifyTokenAPI } from './api/dauth.api';
+import { IDauthUser } from './interfaces';
 
 interface DauthProviderProps {
   domainName: string;
-  sid: string;
+  tsk: string;
   children: React.ReactNode;
 }
 
 export const DauthProvider: React.FC<DauthProviderProps> = (
   props: DauthProviderProps
 ) => {
-  const { domainName, sid, children } = props;
+  const { domainName, tsk, children } = props;
   const [dauthState, dispatch] = useReducer(userReducer, initialDauthState);
+
+  const isValidTsk = useCallback(
+    async (token: string) => {
+      const verifyToken = await verifyTokenAPI({
+        domainName,
+        token,
+        tsk,
+      });
+      if (verifyToken.response.status !== 200) {
+        return false;
+      }
+      return true;
+    },
+    [domainName, tsk]
+  );
 
   // Check token periodically
   useEffect(() => {
     if (!dauthState.isAuthenticated) return;
-    let interval = setInterval(() => {
+    let interval = setInterval(async () => {
       const token_ls = localStorage.getItem(TOKEN_LS);
       if (!token_ls) return;
-      action.checkTokenAction({ dispatch, domainName, sid, token: token_ls });
-    }, 1000 * 60 * 2);
+      const isValid = await isValidTsk(token_ls);
+      if (isValid) {
+        return action.checkTokenAction({
+          dispatch,
+          domainName,
+          token: token_ls,
+        });
+      } else {
+        action.setLogoutAction({ dispatch });
+        throw new Error('Ask value in DauthProvider is not valid');
+      }
+    }, 1000 * 60 * 5);
     return () => clearInterval(interval);
-  }, []);
+  }, [dauthState.isAuthenticated, isValidTsk]);
 
   // Catch login redirect
   useEffect(() => {
-    const queryString = window.location.search;
-    if (!queryString) return;
-    const urlParams = new URLSearchParams(queryString);
-    const token_url = urlParams.get(TOKEN_LS);
-    if (token_url && !dauthState.isAuthenticated) {
-      action.setDauthStateAction({ dispatch, token: token_url, domainName });
-    }
+    (async () => {
+      const queryString = window.location.search;
+      if (!queryString) return;
+      const urlParams = new URLSearchParams(queryString);
+      const token_url = urlParams.get(TOKEN_LS);
+      if (token_url && !dauthState.isAuthenticated) {
+        const isValid = await isValidTsk(token_url);
+        if (isValid) {
+          return action.setDauthStateAction({
+            dispatch,
+            token: token_url,
+            domainName,
+          });
+        } else {
+          action.setLogoutAction({ dispatch });
+          throw new Error('Ask value in DauthProvider is not valid');
+        }
+      }
+    })();
   }, []);
 
   // Auto Login
   useEffect(() => {
-    const dauth_state_ls = localStorage.getItem(TOKEN_LS);
-    if (dauth_state_ls && !dauthState.isAuthenticated) {
-      action.setAutoLoginAction({ dispatch, dauth_state_ls, domainName, sid });
-    }
+    (async () => {
+      const token_ls = localStorage.getItem(TOKEN_LS);
+      if (token_ls && !dauthState.isAuthenticated) {
+        const isValid = await isValidTsk(token_ls);
+        if (isValid) {
+          return action.setAutoLoginAction({
+            dispatch,
+            token_ls,
+            domainName,
+          });
+        } else {
+          action.setLogoutAction({ dispatch });
+          throw new Error('Ask value in DauthProvider is not valid');
+        }
+      }
+    })();
   }, []);
 
   const loginWithRedirect = useCallback(() => {
     return window.location.replace(
-      `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
+      `${getClientBasePath({ domainName })}/${
+        routes.tenantSignin
+      }/${domainName}`
     );
-  }, [domainName, sid]);
+  }, [domainName, domainName]);
 
   const logout = useCallback(() => {
     return action.setLogoutAction({ dispatch });
@@ -75,8 +128,8 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
       name,
       lastname,
       nickname,
-      tel_prefix,
-      tel_suffix,
+      telPrefix,
+      telSuffix,
       language,
       avatar,
     }: Partial<IDauthUser>) => {
@@ -85,8 +138,8 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
         name,
         lastname,
         nickname,
-        tel_prefix,
-        tel_suffix,
+        telPrefix,
+        telSuffix,
         language,
         avatar,
       } as Partial<IDauthUser>;
@@ -106,9 +159,9 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
     return window.location.replace(
       `${getClientBasePath({ domainName })}/${
         routes.tenantUpdateUser
-      }/${sid}/${token_ls}`
+      }/${domainName}/${token_ls}`
     );
-  }, [domainName, sid]);
+  }, [domainName, domainName]);
 
   const sendEmailVerification = useCallback(async () => {
     const token_ls = localStorage.getItem(TOKEN_LS);

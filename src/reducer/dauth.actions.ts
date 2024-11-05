@@ -6,8 +6,8 @@ import {
 } from '../api/dauth.api';
 import { getClientBasePath } from '../api/utils/config';
 import { TOKEN_LS } from '../constants';
-import { IDauthDomainState, IDauthUser } from '../initialDauthState';
-import { routes } from '../routes';
+import { IDauthDomainState, IDauthUser } from '../interfaces';
+import { routes } from '../api/utils/routes';
 import * as DauthTypes from './dauth.types';
 
 type TSetDauthStateAction = {
@@ -54,24 +54,22 @@ export async function setDauthStateAction({
 
 type TSetAutoLoginAction = {
   dispatch: React.Dispatch<any>;
-  dauth_state_ls: string;
+  token_ls: string;
   domainName: string;
-  sid: string;
 };
 export async function setAutoLoginAction({
   dispatch,
-  dauth_state_ls,
+  token_ls,
   domainName,
-  sid,
 }: TSetAutoLoginAction) {
   dispatch({ type: DauthTypes.SET_IS_LOADING, payload: { isLoading: true } });
   try {
     const refreshAccessTokenFetch = await refreshAccessTokenAPI(
       domainName,
-      dauth_state_ls
+      token_ls
     );
     if (refreshAccessTokenFetch.response.status === 200) {
-      const getUserFetch = await getUserAPI(domainName, dauth_state_ls);
+      const getUserFetch = await getUserAPI(domainName, token_ls);
       if (getUserFetch.response.status === 200) {
         dispatch({
           type: DauthTypes.LOGIN,
@@ -88,13 +86,17 @@ export async function setAutoLoginAction({
         return;
       } else {
         window.location.replace(
-          `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
+          `${getClientBasePath({ domainName })}/${
+            routes.tenantSignin
+          }/${domainName}`
         );
         return resetUser(dispatch);
       }
     } else {
       window.location.replace(
-        `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
+        `${getClientBasePath({ domainName })}/${
+          routes.tenantSignin
+        }/${domainName}`
       );
       return resetUser(dispatch);
     }
@@ -232,12 +234,10 @@ export async function sendEmailVerificationAction({
 export async function checkTokenAction({
   dispatch,
   domainName,
-  sid,
   token,
 }: {
   dispatch: React.Dispatch<any>;
   domainName: string;
-  sid: string;
   token: string;
 }) {
   try {
@@ -249,7 +249,9 @@ export async function checkTokenAction({
       return;
     } else {
       window.location.replace(
-        `${getClientBasePath({ domainName })}/${routes.tenantSignin}/${sid}`
+        `${getClientBasePath({ domainName })}/${
+          routes.tenantSignin
+        }/${domainName}`
       );
       return resetUser(dispatch);
     }

@@ -4,4 +4,5 @@ export const routes = {
   tenantGetUser: 't-get-user',
   tenantResendEmailVerification: 't-resend-email-verification',
   tenantRefreshAccessToken: 't-refresh-access-token',
+  tenantVerifyToken: "t-verify-token",
 };
