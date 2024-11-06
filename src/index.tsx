@@ -29,15 +29,19 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
 
   const isValidTsk = useCallback(
     async (token: string) => {
-      const verifyToken = await verifyTokenAPI({
-        domainName,
-        token,
-        tsk,
-      });
-      if (verifyToken.response.status !== 200) {
+      try {
+        const verifyToken = await verifyTokenAPI({
+          domainName,
+          token,
+          tsk,
+        });
+        if (verifyToken.response.status !== 200) {
+          return false;
+        }
+        return true;
+      } catch (error) {
         return false;
       }
-      return true;
     },
     [domainName, tsk]
   );
