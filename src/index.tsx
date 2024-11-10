@@ -14,6 +14,7 @@ import { TOKEN_LS } from './constants';
 import { routes } from './api/utils/routes';
 import { verifyTokenAPI } from './api/dauth.api';
 import { IDauthUser } from './interfaces';
+import { SET_IS_LOADING } from './reducer/dauth.types';
 
 interface DauthProviderProps {
   domainName: string;
@@ -106,6 +107,11 @@ export const DauthProvider: React.FC<DauthProviderProps> = (
           action.setLogoutAction({ dispatch });
           throw new Error('Ask value in DauthProvider is not valid');
         }
+      } else {
+        return dispatch({
+          type: SET_IS_LOADING,
+          payload: { isLoading: false },
+        });
       }
     })();
   }, []);

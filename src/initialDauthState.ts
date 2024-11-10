@@ -5,7 +5,7 @@ const initialDauthState: IDauthState = {
     language: window.document.documentElement.getAttribute('lang') || 'es',
   } as IDauthUser,
   domain: {} as IDauthDomainState,
-  isLoading: false,
+  isLoading: true,
   isAuthenticated: false,
   loginWithRedirect: () => {},
   logout: () => {},
